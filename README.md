@@ -4,7 +4,7 @@
 
 Clone and install the package:
 
-git clone 
-cd path/to/scins/
-pip install -e scins
+`git clone `
+`cd path/to/scins/`
+`pip install -e scins`
 
