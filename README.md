@@ -39,6 +39,15 @@ This does not correspond to my chemical intuition.
 
 The following code snippet shows how to avoid this issue:
 
+```
+mol = Chem.MolFromSmiles(smiles)
+generic_mol = MakeScaffoldGeneric(mol)
+generic_scaffold = GetScaffoldForMol(generic_mol)
+```
+
+Originally, I proposed using an edited version of the function in rdkit (below), but because it is not tested well, 
+I think the above is better - essentially making things generic first avoids complications due to bond orders.
+
 ```python
 scaffold = scins.GetScaffoldForMol_edited(mol)
 generic_scaffold = MakeScaffoldGeneric(scaffold)
