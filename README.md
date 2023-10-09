@@ -14,8 +14,8 @@ In your script:
 
 ```python
 from rdkit import Chem
-from rdkit.Chem.Scaffold.MurckoScaffold import GetScaffoldForMol, MakeScaffoldGeneric
-from scins import scins
+from rdkit.Chem.Scaffolds.MurckoScaffold import GetScaffoldForMol, MakeScaffoldGeneric
+import scins
 
 mol = Chem.MolFromSmiles('Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1')
 scaffold = GetScaffoldForMol(mol)
