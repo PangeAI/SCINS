@@ -14,8 +14,8 @@ In your script:
 
 ```python
 from rdkit import Chem
-from rdkit.Chem.Scaffold.MurckoScaffold import GetScaffoldForMol, MakeScaffoldGeneric
-from scins import scins
+from rdkit.Chem.Scaffolds.MurckoScaffold import GetScaffoldForMol, MakeScaffoldGeneric
+import scins
 
 mol = Chem.MolFromSmiles('Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1')
 scaffold = GetScaffoldForMol(mol)
@@ -38,6 +38,15 @@ This does not correspond to my chemical intuition.
 ![alt text](assets/weird_scaffold_def.png "Figure 1")
 
 The following code snippet shows how to avoid this issue:
+
+```
+mol = Chem.MolFromSmiles(smiles)
+generic_mol = MakeScaffoldGeneric(mol)
+generic_scaffold = GetScaffoldForMol(generic_mol)
+```
+
+Originally, I proposed using an edited version of the function in rdkit (below), but because it is not tested well, 
+I think the above is better - essentially making things generic first avoids complications due to bond orders.
 
 ```python
 scaffold = scins.GetScaffoldForMol_edited(mol)
