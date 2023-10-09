@@ -145,10 +145,6 @@ def get_ring_assemblies(rings_list):
     merged_rings = _merge_rings(rings_list)
     return merged_rings
 
-rl = get_rings_for_mol(Chem.MolFromSmiles('CCC1C(CC2)CC(C(c3ccnc4ccccc34)O)N2C1'))
-mrl = get_num_ring_assemblies(rl)
-print(rl, len(rl))
-
 def get_num_bridgehead_atoms(mol):
     return rdMolDescriptors.CalcNumBridgeheadAtoms(mol)
 
@@ -164,8 +160,6 @@ def _get_num_bridge_bonds(ring_list):
             if len(common_atoms) > 2:
                 num_bridge_bonds += len(common_atoms) - 1
     return num_bridge_bonds
-
-
 def ring_list_to_num_macrocycles(ring_list):
     ring_sizes = [len(ring) for ring in ring_list]
     num_macrocycles = sum(1 for size in ring_sizes if size > 12)
@@ -245,7 +239,7 @@ def mol_to_chain_lengths(mol):
 
 def mol_to_num_ring_assemblies(mol):
     rings_list = get_rings_for_mol(mol)
-    ring_assemblies_list = get_ring_assemblies(rings_list)
+    ring_assemblies_list = get_num_ring_assemblies(rings_list)
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
     ring_mapping = _get_ring_mapping(atom2ring_idx, atom2ring_assembly_idx)
@@ -278,10 +272,12 @@ def mol_to_scins(mol):
     rings_list = get_rings_for_mol(mol)
     ring_assemblies_list = get_num_ring_assemblies(rings_list)
     # num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
-    num_bridge_bonds = _get_num_bridge_bonds(rings_list)
+    # num_bridge_bonds = _get_num_bridge_bonds(rings_list)
+    num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
     # if num_bridgehead_atoms != 0:
     #     assert num_bridgehead_atoms + 1 == num_bridge_bonds
-    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(len(ring_assemblies_list)) + str(num_bridge_bonds)
+    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(
+        len(ring_assemblies_list)) + str(num_bridgehead_atoms)
 
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)

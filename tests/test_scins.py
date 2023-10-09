@@ -3,10 +3,10 @@ import unittest
 from rdkit import Chem
 from rdkit.Chem.Scaffolds.MurckoScaffold import GetScaffoldForMol, MakeScaffoldGeneric
 
-from scins.scins import (mol_to_num_chain_assemblies,
+from scins import (mol_to_num_chain_assemblies,
                          mol_to_chain_lengths,
                          get_rings_for_mol,
-                         get_ring_assemblies,
+                         get_num_ring_assemblies,
                          GetScaffoldForMol_edited
                          )
 
@@ -42,10 +42,13 @@ class TestSCINS(unittest.TestCase):
             self.assertEqual(len(difference), 0)
 
     def test_get_num_ring_assemblies(self):
-        smi2num_ring_assemblies = {'Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1': 3}
+        smi2num_ring_assemblies = {'Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1': 3,
+                                   'Oc1c2c(O)cccc2ccc1': 1,
+                                   'CCC1C(CC2)CC(C(c3ccnc4ccccc34)O)N2C1': 2}
         for smi, answer in smi2num_ring_assemblies.items():
             mol = Chem.MolFromSmiles(smi)
             gen_scaffold = MakeScaffoldGeneric(GetScaffoldForMol(mol))
             rings = get_rings_for_mol(gen_scaffold)
-            ring_assemblies = get_ring_assemblies(rings)
+            ring_assemblies = get_num_ring_assemblies(rings)
             self.assertEqual(len(ring_assemblies), answer)
+
