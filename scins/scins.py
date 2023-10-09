@@ -113,15 +113,41 @@ def _merge_rings(ring_list):
                 merged_ring = list(set(ring_list[i] + ring_list[j]))  # Merge and remove duplicates
                 merged_rings.append(merged_ring)
                 merged = True
-        if not merged:
+        if not  merged:
             merged_rings.append(ring_list[i])
     return merged_rings
+
+
+def get_num_ring_assemblies(rings):
+    from copy import deepcopy
+    rings_list = deepcopy(rings)
+    # Function to merge rings with a common atom
+    def merge_rings(ring_list):
+        merged = False
+        for i in range(len(ring_list)):
+            for j in range(i + 1, len(ring_list)):
+                common_atoms = set(ring_list[i]) & set(ring_list[j])
+                if common_atoms:
+                    ring_list[i].extend(ring_list[j])
+                    ring_list[i] = list(set(ring_list[i]))  # Remove duplicates
+                    ring_list.pop(j)
+                    merged = True
+                    return merged
+        return merged
+
+    # Merge rings iteratively until no more merging is possible
+    while merge_rings(rings_list):
+        pass
+    return len(rings_list)
 
 
 def get_ring_assemblies(rings_list):
     merged_rings = _merge_rings(rings_list)
     return merged_rings
 
+rl = get_rings_for_mol(Chem.MolFromSmiles('CCC1C(CC2)CC(C(c3ccnc4ccccc34)O)N2C1'))
+mrl = get_num_ring_assemblies(rl)
+print(rl, len(rl))
 
 def get_num_bridgehead_atoms(mol):
     return rdMolDescriptors.CalcNumBridgeheadAtoms(mol)
@@ -250,13 +276,12 @@ def mol_to_scins(mol):
     num_chain_assemblies = _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph)
     chain_lengths = _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph)
     rings_list = get_rings_for_mol(mol)
-    ring_assemblies_list = get_ring_assemblies(rings_list)
+    num_ring_assemblies_list = get_num_ring_assemblies(rings_list)
     # num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
     num_bridge_bonds = _get_num_bridge_bonds(rings_list)
     # if num_bridgehead_atoms != 0:
     #     assert num_bridgehead_atoms + 1 == num_bridge_bonds
-    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(
-        len(ring_assemblies_list)) + str(num_bridge_bonds)
+    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(num_ring_assemblies_list) + str(num_bridge_bonds)
 
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
