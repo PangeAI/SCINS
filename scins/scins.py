@@ -120,7 +120,7 @@ def _merge_rings(ring_list):
 
 def get_num_ring_assemblies(rings):
     from copy import deepcopy
-    rings_list = deepcopy(rings)
+    rings_list_copy = deepcopy(rings)
     # Function to merge rings with a common atom
     def merge_rings(ring_list):
         merged = False
@@ -136,9 +136,9 @@ def get_num_ring_assemblies(rings):
         return merged
 
     # Merge rings iteratively until no more merging is possible
-    while merge_rings(rings_list):
+    while merge_rings(rings_list_copy):
         pass
-    return len(rings_list)
+    return rings_list_copy
 
 
 def get_ring_assemblies(rings_list):
@@ -276,12 +276,12 @@ def mol_to_scins(mol):
     num_chain_assemblies = _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph)
     chain_lengths = _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph)
     rings_list = get_rings_for_mol(mol)
-    num_ring_assemblies_list = get_num_ring_assemblies(rings_list)
+    ring_assemblies_list = get_num_ring_assemblies(rings_list)
     # num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
     num_bridge_bonds = _get_num_bridge_bonds(rings_list)
     # if num_bridgehead_atoms != 0:
     #     assert num_bridgehead_atoms + 1 == num_bridge_bonds
-    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(num_ring_assemblies_list) + str(num_bridge_bonds)
+    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(len(ring_assemblies_list)) + str(num_bridge_bonds)
 
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
