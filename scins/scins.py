@@ -213,7 +213,7 @@ def mol_to_num_ring_assemblies(mol):
 
 
 
-def mol_to_scins(mol):
+def scaffold_mol_to_scins(mol):
     """
     Currently you have to decide whether you want to use the generic scaffold of the molecule
     as defined in rdkit, or Use Kamen's recommendation to use the scaffold that is trimmed further.
@@ -229,10 +229,8 @@ def mol_to_scins(mol):
     chain_lengths = _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph)
     rings_list = get_rings_for_mol(mol)
     ring_assemblies_list = get_num_ring_assemblies(rings_list)
-    # num_bridge_bonds = _get_num_bridge_bonds(rings_list)
     num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
-    # if num_bridgehead_atoms != 0:
-    #     assert num_bridgehead_atoms + 1 == num_bridge_bonds
+
     part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(
         len(ring_assemblies_list)) + str(num_bridgehead_atoms)
 
@@ -262,7 +260,7 @@ def smiles_to_scins(smiles):
     if mol is None:
         rdkit_mol_warning(mol)
         return EMPTY_SCINS
-    return mol_to_scins(mol)
+    return scaffold_mol_to_scins(mol)
 
 
 def GetScaffoldForMol_edited(mol):

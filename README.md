@@ -20,7 +20,7 @@ import scins
 mol = Chem.MolFromSmiles('Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1')
 scaffold = GetScaffoldForMol(mol)
 generic_scaffold = MakeScaffoldGeneric(scaffold)
-scins_str = scins.mol_to_scins(mol)
+scins_str = scins.scaffold_mol_to_scins(mol)
 ```
 
 ## Important Note:
@@ -37,12 +37,13 @@ This does not correspond to my chemical intuition.
 
 ![alt text](assets/weird_scaffold_def.png "Figure 1")
 
-The following code snippet shows how to avoid this issue:
+The following code snippet shows a way to avoid this issue:
 
-```
+```python
 mol = Chem.MolFromSmiles(smiles)
-generic_mol = MakeScaffoldGeneric(mol)
-generic_scaffold = GetScaffoldForMol(generic_mol)
+generic_scaffold = MakeScaffoldGeneric(mol)
+generic_scaffold = GetScaffoldForMol(generic_scaffold)
+scins_str = scins.scaffold_mol_to_scins(generic_scaffold)
 ```
 
 Originally, I proposed using an edited version of the function in rdkit (below), but because it is not tested well, 
@@ -51,7 +52,7 @@ I think the above is better - essentially making things generic first avoids com
 ```python
 scaffold = scins.GetScaffoldForMol_edited(mol)
 generic_scaffold = MakeScaffoldGeneric(scaffold)
-scins_str = scins.mol_to_scins(mol)
+scins_str = scins.scaffold_mol_to_scins(generic_scaffold)
 ```
 For the same molecule, the function GetScaffoldForMol_edited in the 
 package trims the carbonyl oxygen (and other bits that are sticking out).

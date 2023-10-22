@@ -52,3 +52,6 @@ class TestSCINS(unittest.TestCase):
             ring_assemblies = get_num_ring_assemblies(rings)
             self.assertEqual(len(ring_assemblies), answer)
 
+    def test_mol_to_scins(self):
+        pass
+
