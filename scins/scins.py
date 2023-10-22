@@ -102,22 +102,6 @@ def get_rings_for_mol(mol):
     return rings
 
 
-def _merge_rings(ring_list):
-    # Function to merge rings with a common atom
-    merged_rings = []
-    for i in range(len(ring_list)):
-        merged = False
-        for j in range(i + 1, len(ring_list)):
-            common_atoms = set(ring_list[i]) & set(ring_list[j])
-            if common_atoms:
-                merged_ring = list(set(ring_list[i] + ring_list[j]))  # Merge and remove duplicates
-                merged_rings.append(merged_ring)
-                merged = True
-        if not  merged:
-            merged_rings.append(ring_list[i])
-    return merged_rings
-
-
 def get_num_ring_assemblies(rings):
     from copy import deepcopy
     rings_list_copy = deepcopy(rings)
@@ -141,25 +125,10 @@ def get_num_ring_assemblies(rings):
     return rings_list_copy
 
 
-def get_ring_assemblies(rings_list):
-    merged_rings = _merge_rings(rings_list)
-    return merged_rings
-
 def get_num_bridgehead_atoms(mol):
     return rdMolDescriptors.CalcNumBridgeheadAtoms(mol)
 
 
-def _get_num_bridge_bonds(ring_list):
-    # can combine with one of the other ring iterators
-    num_bridge_bonds = 0
-    for i in range(len(ring_list)):
-        for j in range(i + 1, len(ring_list)):
-            ring1_atoms = set(ring_list[i])
-            ring2_atoms = set(ring_list[j])
-            common_atoms = ring1_atoms.intersection(ring2_atoms)
-            if len(common_atoms) > 2:
-                num_bridge_bonds += len(common_atoms) - 1
-    return num_bridge_bonds
 def ring_list_to_num_macrocycles(ring_list):
     ring_sizes = [len(ring) for ring in ring_list]
     num_macrocycles = sum(1 for size in ring_sizes if size > 12)
@@ -188,10 +157,6 @@ def _get_ring_mapping(atom2ring_idx_dict, atom2ring_assembly_dict):
 def _count_keys_corresponding_to_values(ring_mapping):
     value_counts = Counter(ring_mapping.values())
     return value_counts
-
-
-def count_keys_for_values(value_counts, value):
-    return value_counts.get(value, 0)
 
 
 def _bin(num):
@@ -247,11 +212,6 @@ def mol_to_num_ring_assemblies(mol):
     return num_rings_in_assemblies
 
 
-def mol_to_num_bridge_bonds(mol):
-    rings_list = get_rings_for_mol(mol)
-    num_bridge_bonds = _get_num_bridge_bonds(rings_list)
-    return num_bridge_bonds
-
 
 def mol_to_scins(mol):
     """
@@ -262,16 +222,13 @@ def mol_to_scins(mol):
     :return: str: the SCINS string
     """
     if not isinstance(mol, Chem.rdchem.Mol):
-        logging.warning(
-            "Input should be an RDKit molecule object, but got an object of type %s. Therefore returning empty scins" % type(
-                mol))
+        rdkit_mol_warning(mol)
         return EMPTY_SCINS
     non_ring_mol_graph = mol_to_non_ring_mol_graph(mol)
     num_chain_assemblies = _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph)
     chain_lengths = _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph)
     rings_list = get_rings_for_mol(mol)
     ring_assemblies_list = get_num_ring_assemblies(rings_list)
-    # num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
     # num_bridge_bonds = _get_num_bridge_bonds(rings_list)
     num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
     # if num_bridgehead_atoms != 0:
@@ -283,9 +240,9 @@ def mol_to_scins(mol):
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
     ring_mapping = _get_ring_mapping(atom2ring_idx, atom2ring_assembly_idx)
     num_rings_in_assemblies = _count_keys_corresponding_to_values(ring_mapping)
-    num_assemblies_with_one_ring = num_rings_in_assemblies.get(1, 0)
-    num_assemblies_with_two_rings = num_rings_in_assemblies.get(2, 0)
-    num_assemblies_with_three_rings = num_rings_in_assemblies.get(3, 0)
+    num_assemblies_with_one_ring = num_rings_in_assemblies.get('1', 0)
+    num_assemblies_with_two_rings = num_rings_in_assemblies.get('2', 0)
+    num_assemblies_with_three_rings = num_rings_in_assemblies.get('3', 0)
     num_macrocycles = ring_list_to_num_macrocycles(rings_list)
     part2 = (str(num_assemblies_with_one_ring) + str(num_assemblies_with_two_rings) +
              str(num_assemblies_with_three_rings) + str(num_macrocycles))
@@ -295,18 +252,18 @@ def mol_to_scins(mol):
     return part1 + '-' + part2 + '-' + part3
 
 
-# def smiles_to_scins(smiles):
-#     if not isinstance(smiles, str):
-#         logging.warning(
-#             "Input should be a SMILES str, but got an object of type %s. Therefore returning empty scins" % type(
-#                 smiles))
-#         return EMPTY_SCINS
-#     mol = Chem.MolFromSmiles(smiles)
-#     if mol is None:
-#         logging.warning(
-#             "Input should be a valid SMILES str, but got %s. Therefore returning empty scins" % smiles)
-#         return EMPTY_SCINS
-#     return mol_to_scins(mol)
+def smiles_to_scins(smiles):
+    if not isinstance(smiles, str):
+        logging.warning(
+            "Input should be a SMILES str, but got an object of type %s. Therefore returning empty scins" % type(
+                smiles))
+        return EMPTY_SCINS
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        rdkit_mol_warning(mol)
+        return EMPTY_SCINS
+    return mol_to_scins(mol)
+
 
 def GetScaffoldForMol_edited(mol):
     murckoPatts = [

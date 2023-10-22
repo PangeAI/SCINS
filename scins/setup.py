@@ -7,4 +7,7 @@ setup(
     install_requires=[
         # Add any dependencies required by your project here
     ],
+    author='Kamen Petrov',
+    author_email='kamen.pavlinov.petrov@gmail.com',
+    description='A package for calculating the SCINS molecules',
 )
