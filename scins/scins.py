@@ -1,5 +1,6 @@
 import logging
 from collections import Counter
+import itertools
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
@@ -55,13 +56,22 @@ def _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph):
     return num_chains
 
 
-def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph):
+def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph, rings):
+    ring_atoms = list(itertools.chain.from_iterable(rings))
     visited = set()
     # chains = 0
     chain_lengths = []
 
+    tertiary_c = []
+    for atom in non_ring_mol_graph:
+        nei = [n for n in non_ring_mol_graph[atom]]
+        if len(nei) > 2:
+            tertiary_c.append(atom)
+
     # Depth-First Search (DFS) to find unbranched chains
     for atom in non_ring_mol_graph:
+        # if atom not in ring_atoms: # want to start the chain with a ring atom
+        #     continue
         if atom not in visited:
             # chains += 1
             chain_length = 0
@@ -71,22 +81,22 @@ def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph):
                 visited.add(node)
 
                 # Check if the current node has more than one neighbor
-                neighbor_count = len([n for n in non_ring_mol_graph[node] if n not in visited])
-                if neighbor_count > 1:
+                # neighbor_count = len([n for n in non_ring_mol_graph[node]]) # if n not in visited and n not in ring_atoms
+                neighbors = non_ring_mol_graph[node]
+                if len(neighbors) > 2: ## or n not in ring_atoms if we want to split the chains there
                     # If more than one neighbor, it's a branching point; terminate this chain
                     # if len(visited) == 1:
                     # if this is the first atom that we start with in the graph
                     # we need to correct for the number of chains
                     # chains = 0
-                    break
+                    continue
 
                 for neighbor in non_ring_mol_graph[node]:
                     ## this looks inefficient, but actually needs to be like that to capture all edge cases
-                    if len([n for n in non_ring_mol_graph[neighbor]]) >= 3 and neighbor not in visited:
+                    if len([n for n in non_ring_mol_graph[neighbor]]) >= 3:
                         chain_length += 1
-                        stack.append(neighbor)
-                    elif len([n for n in non_ring_mol_graph[neighbor]]) >= 3:
-                        chain_length += 1
+                        if neighbor not in visited:
+                            stack.append(neighbor)
                     elif neighbor not in visited:
                         stack.append(neighbor)
                         chain_length += 1
@@ -155,13 +165,13 @@ def _get_ring_mapping(atom2ring_idx_dict, atom2ring_assembly_dict):
 
 
 def _count_keys_corresponding_to_values(ring_mapping):
-    value_counts = Counter(ring_mapping.values())
+    value_counts = Counter(Counter(ring_mapping.values()).values())
     return value_counts
 
 
 def _bin(num):
     d = {
-        1: 1, 2: 2, 3: 3, 4: 3, 5: 4, 6: 4
+        0: 1, 1: 1, 2: 2, 3: 3, 4: 3, 5: 4, 6: 4
     }
     if num in d.keys():
         return d[num]
@@ -170,8 +180,9 @@ def _bin(num):
         return 7
 
 
-def get_the_four_smallest_values_binned(chain_lengths):
+def _get_the_four_smallest_values_binned(chain_lengths):
     chain_lengths = sorted(chain_lengths)
+    print(chain_lengths)
     if len(chain_lengths) >= 4:
         return _bin(chain_lengths[0]), _bin(chain_lengths[1]), _bin(chain_lengths[2]), _bin(chain_lengths[3])
     elif len(chain_lengths) == 3:
@@ -224,10 +235,12 @@ def scaffold_mol_to_scins(mol):
     if not isinstance(mol, Chem.rdchem.Mol):
         rdkit_mol_warning(mol)
         return EMPTY_SCINS
+    rings_list = get_rings_for_mol(mol)
+
     non_ring_mol_graph = mol_to_non_ring_mol_graph(mol)
     num_chain_assemblies = _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph)
-    chain_lengths = _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph)
-    rings_list = get_rings_for_mol(mol)
+    chain_lengths = _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph, rings_list)
+
     ring_assemblies_list = get_num_ring_assemblies(rings_list)
     num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
 
@@ -236,16 +249,16 @@ def scaffold_mol_to_scins(mol):
 
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
-    ring_mapping = _get_ring_mapping(atom2ring_idx, atom2ring_assembly_idx)
-    num_rings_in_assemblies = _count_keys_corresponding_to_values(ring_mapping)
-    num_assemblies_with_one_ring = num_rings_in_assemblies.get('1', 0)
-    num_assemblies_with_two_rings = num_rings_in_assemblies.get('2', 0)
-    num_assemblies_with_three_rings = num_rings_in_assemblies.get('3', 0)
+    ring_index2ring_assembly_index = _get_ring_mapping(atom2ring_idx, atom2ring_assembly_idx)
+    num_rings_in_assemblies = _count_keys_corresponding_to_values(ring_index2ring_assembly_index)
+    num_assemblies_with_one_ring = num_rings_in_assemblies.get(1, 0)
+    num_assemblies_with_two_rings = num_rings_in_assemblies.get(2, 0)
+    num_assemblies_with_three_rings = num_rings_in_assemblies.get(3, 0)
     num_macrocycles = ring_list_to_num_macrocycles(rings_list)
     part2 = (str(num_assemblies_with_one_ring) + str(num_assemblies_with_two_rings) +
              str(num_assemblies_with_three_rings) + str(num_macrocycles))
 
-    part3 = ''.join([str(i) for i in get_the_four_smallest_values_binned(chain_lengths)])
+    part3 = ''.join([str(i) for i in _get_the_four_smallest_values_binned(chain_lengths)])
 
     return part1 + '-' + part2 + '-' + part3
 
@@ -281,7 +294,12 @@ def GetScaffoldForMol_edited(mol):
                 atom.SetNoImplicit(False)
     h = Chem.MolFromSmiles('[H]')
     mol = Chem.ReplaceSubstructs(mol, Chem.MolFromSmarts('[D1;$([D1]-n)]'), h, True)[0]
-    mol = Chem.RemoveHs(mol)
+    mol = Chem.RemoveHs(mol, sanitize=False)
     return mol
 
+
+if __name__ == "__main__":
+    from rdkit.Chem.Scaffolds.MurckoScaffold import MakeScaffoldGeneric
+    gen_scaffold = MakeScaffoldGeneric(GetScaffoldForMol_edited(Chem.MolFromSmiles("Cc(cccc1)c1NC(CCC(Nc(c(OC)c1)cc(OC)c1NC(c1ccco1)=O)=O)=O")))
+    print(scaffold_mol_to_scins(gen_scaffold))
 
