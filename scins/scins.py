@@ -83,7 +83,7 @@ def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph, rings):
                 # Check if the current node has more than one neighbor
                 # neighbor_count = len([n for n in non_ring_mol_graph[node]]) # if n not in visited and n not in ring_atoms
                 neighbors = non_ring_mol_graph[node]
-                if len(neighbors) > 2: ## or n not in ring_atoms if we want to split the chains there
+                if len(neighbors) > 2:  ## or n not in ring_atoms if we want to split the chains there
                     # If more than one neighbor, it's a branching point; terminate this chain
                     # if len(visited) == 1:
                     # if this is the first atom that we start with in the graph
@@ -115,6 +115,7 @@ def get_rings_for_mol(mol):
 def get_num_ring_assemblies(rings):
     from copy import deepcopy
     rings_list_copy = deepcopy(rings)
+
     # Function to merge rings with a common atom
     def merge_rings(ring_list):
         merged = False
@@ -182,7 +183,6 @@ def _bin(num):
 
 def _get_the_four_smallest_values_binned(chain_lengths):
     chain_lengths = sorted(chain_lengths)
-    print(chain_lengths)
     if len(chain_lengths) >= 4:
         return _bin(chain_lengths[0]), _bin(chain_lengths[1]), _bin(chain_lengths[2]), _bin(chain_lengths[3])
     elif len(chain_lengths) == 3:
@@ -223,7 +223,6 @@ def mol_to_num_ring_assemblies(mol):
     return num_rings_in_assemblies
 
 
-
 def scaffold_mol_to_scins(mol):
     """
     Currently you have to decide whether you want to use the generic scaffold of the molecule
@@ -244,8 +243,8 @@ def scaffold_mol_to_scins(mol):
     ring_assemblies_list = get_num_ring_assemblies(rings_list)
     num_bridgehead_atoms = get_num_bridgehead_atoms(mol)
 
-    part1 = str(num_chain_assemblies) + str(len(chain_lengths)) + str(len(rings_list)) + str(
-        len(ring_assemblies_list)) + str(num_bridgehead_atoms)
+    part1 = '_'.join([str(num_chain_assemblies), str(len(chain_lengths)), str(len(rings_list)),
+                      str(len(ring_assemblies_list)), str(num_bridgehead_atoms)])
 
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
@@ -253,12 +252,16 @@ def scaffold_mol_to_scins(mol):
     num_rings_in_assemblies = _count_keys_corresponding_to_values(ring_index2ring_assembly_index)
     num_assemblies_with_one_ring = num_rings_in_assemblies.get(1, 0)
     num_assemblies_with_two_rings = num_rings_in_assemblies.get(2, 0)
-    num_assemblies_with_three_rings = num_rings_in_assemblies.get(3, 0)
-    num_macrocycles = ring_list_to_num_macrocycles(rings_list)
-    part2 = (str(num_assemblies_with_one_ring) + str(num_assemblies_with_two_rings) +
-             str(num_assemblies_with_three_rings) + str(num_macrocycles))
+    num_assemblies_with_three_rings = 0  # num_rings_in_assemblies.get(3, 0)
+    for k in num_rings_in_assemblies.keys():
+        if k > 2:
+            num_assemblies_with_three_rings += num_rings_in_assemblies[k]
 
-    part3 = ''.join([str(i) for i in _get_the_four_smallest_values_binned(chain_lengths)])
+    num_macrocycles = ring_list_to_num_macrocycles(rings_list)
+    part2 = '_'.join([str(num_assemblies_with_one_ring), str(num_assemblies_with_two_rings),
+                      str(num_assemblies_with_three_rings), str(num_macrocycles)])
+
+    part3 = '_'.join([str(i) for i in _get_the_four_smallest_values_binned(chain_lengths)])
 
     return part1 + '-' + part2 + '-' + part3
 
@@ -295,11 +298,6 @@ def GetScaffoldForMol_edited(mol):
     h = Chem.MolFromSmiles('[H]')
     mol = Chem.ReplaceSubstructs(mol, Chem.MolFromSmarts('[D1;$([D1]-n)]'), h, True)[0]
     mol = Chem.RemoveHs(mol, sanitize=False)
+    if mol.GetNumAtoms() < 3:
+        return Chem.MolFromSmiles('')
     return mol
-
-
-if __name__ == "__main__":
-    from rdkit.Chem.Scaffolds.MurckoScaffold import MakeScaffoldGeneric
-    gen_scaffold = MakeScaffoldGeneric(GetScaffoldForMol_edited(Chem.MolFromSmiles("Cc(cccc1)c1NC(CCC(Nc(c(OC)c1)cc(OC)c1NC(c1ccco1)=O)=O)=O")))
-    print(scaffold_mol_to_scins(gen_scaffold))
-
