@@ -6,7 +6,7 @@ Clone and install the package:
 
 `git clone git@github.com:PangeAI/SCINS.git`
 
-`cd SCINS/scins`
+`cd SCINS`
 
 `pip install -e scins`
 
