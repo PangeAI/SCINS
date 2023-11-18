@@ -10,7 +10,7 @@ Clone and install the package:
 
 `pip install -e scins`
 
-In your script:
+In your script (although probably the version below is better):
 
 ```python
 from rdkit import Chem
