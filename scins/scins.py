@@ -215,19 +215,18 @@ def mol_to_num_ring_assemblies(mol):
     return num_rings_in_assemblies
 
 
-def scaffold_mol_to_scins(mol, return_as_dict=False):
+def scaffold_mol_to_scins(mol: Chem.rdchem.Mol) -> str:
     """
     Currently you have to decide whether you want to use the generic scaffold of the molecule
-    as defined in rdkit, or Use Kamen's recommendation to use the scaffold that is trimmed further.
-    Hence, this function directly takes the Chem.rdchem.Mol representation of the scaffold as input.
-    :param mol: The Generic Murcko Scaffold of the molecule
+    as originally defined by Bemis and Murcko, or use the scaffold that is trimmed further.
+    Hence, this function directly takes the Chem.rdchem.Mol scaffold object as input.
+    :param mol: The generic Murcko Scaffold of the molecule
     :return: str: the SCINS string
     """
     if not isinstance(mol, Chem.rdchem.Mol):
         rdkit_mol_warning(mol)
         return ERROR_SCINS
     rings_list = get_rings_for_mol(mol)
-    # num_rings = rdMolDescriptors.CalcNumRings(mol) ## actually seems to agree with the one above
 
     non_ring_mol_graph = mol_to_non_ring_mol_graph(mol)
     num_chain_assemblies = _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph)
@@ -245,7 +244,7 @@ def scaffold_mol_to_scins(mol, return_as_dict=False):
     num_rings_in_assemblies = _count_keys_corresponding_to_values(ring_index2ring_assembly_index)
     num_assemblies_with_one_ring = num_rings_in_assemblies.get(1, 0)
     num_assemblies_with_two_rings = num_rings_in_assemblies.get(2, 0)
-    num_assemblies_with_three_rings = 0  # num_rings_in_assemblies.get(3, 0)
+    num_assemblies_with_three_rings = 0
     for k in num_rings_in_assemblies.keys():
         if k > 2:
             num_assemblies_with_three_rings += num_rings_in_assemblies[k]
@@ -256,22 +255,6 @@ def scaffold_mol_to_scins(mol, return_as_dict=False):
 
     four_shortest_chains = _get_the_four_smallest_values_binned(chain_lengths)
     part3 = '_'.join([str(i) for i in four_shortest_chains])
-
-    if return_as_dict:
-        return {'num_chain_assemblies': num_chain_assemblies,
-                'chain_lengths': chain_lengths,
-                'num_rings': len(rings_list),
-                'num_ring_assemblies': len(ring_assemblies_list),
-                'num_bridgehead_atoms': num_bridgehead_atoms,
-                'num_assemblies_with_one_ring': num_assemblies_with_one_ring,
-                'num_assemblies_with_two_rings': num_assemblies_with_two_rings,
-                'num_assemblies_with_three_rings': num_assemblies_with_three_rings,
-                'num_macrocycles': num_macrocycles,
-                'first_shortest_chains': four_shortest_chains[0],
-                'second_shortest_chains': four_shortest_chains[1],
-                'third_shortest_chains': four_shortest_chains[2],
-                'fourth_shortest_chains': four_shortest_chains[3]
-                }
 
     return part1 + '-' + part2 + '-' + part3
 
