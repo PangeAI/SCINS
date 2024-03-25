@@ -215,7 +215,7 @@ def mol_to_num_ring_assemblies(mol):
     return num_rings_in_assemblies
 
 
-def scaffold_mol_to_scins(mol: Chem.rdchem.Mol) -> str:
+def generic_scaffold_mol_to_scins(mol: Chem.rdchem.Mol) -> str:
     """
     Currently you have to decide whether you want to use the generic scaffold of the molecule
     as originally defined by Bemis and Murcko, or use the scaffold that is trimmed further.
@@ -259,7 +259,7 @@ def scaffold_mol_to_scins(mol: Chem.rdchem.Mol) -> str:
     return part1 + '-' + part2 + '-' + part3
 
 
-def smiles_to_scins(smiles):
+def generic_scaffold_smiles_to_scins(smiles: str) -> str:
     if not isinstance(smiles, str):
         logging.warning(
             "Input should be a SMILES str, but got an object of type %s. Therefore returning ERROR_SCINS" % type(
@@ -269,7 +269,7 @@ def smiles_to_scins(smiles):
     if mol is None:
         rdkit_mol_warning(mol)
         return ERROR_SCINS
-    return scaffold_mol_to_scins(mol)
+    return generic_scaffold_mol_to_scins(mol)
 
 
 def GetScaffoldForMol_edited(mol):

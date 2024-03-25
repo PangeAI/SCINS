@@ -2,3 +2,4 @@ scins_definitions.ipynb
 scins/scins.egg-info
 scins/build
 scins/dist
+scins/__pycache__/
