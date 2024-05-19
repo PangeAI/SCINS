@@ -3,3 +3,6 @@ scins/scins.egg-info
 scins/build
 scins/dist
 scins/__pycache__/
+tests/__pycache__/
+playground.py
+scins/dataclass
