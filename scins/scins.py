@@ -1,11 +1,20 @@
+#
+#  Copyright (c) 2024 Kamen Petrov
+#  All rights reserved.
+#
+#  This file is part of the ChEMBL_StructurePipeline project.
+#  The contents are covered by the terms of the MIT license
+#  which is included in the file LICENSE, found at the root
+#  of the source tree.
+
 import logging
 from copy import deepcopy
 from collections import Counter
+from typing import Dict, List
 
 from rdkit import Chem
 from rdkit.Chem import rdMolDescriptors
 
-EMPTY_SCINS = '0_0_0_0_0-0_0_0_0-0_0_0_0'
 ERROR_SCINS = 'ERROR_SCINS'
 
 
@@ -15,14 +24,22 @@ def rdkit_mol_warning(mol):
             mol))
 
 
-def _update_mol_graph_dict_inplace(atom_key, atom_bound, non_ring_mol_graph):
+def _update_mol_graph_dict_inplace(atom_key: int,
+                                   atom_bound: int,
+                                   non_ring_mol_graph: Dict[int, List[int]]) -> None:
     if atom_key in non_ring_mol_graph:
         non_ring_mol_graph[atom_key].append(atom_bound)
     else:
         non_ring_mol_graph[atom_key] = [atom_bound]
 
 
-def mol_to_non_ring_mol_graph(mol):
+def mol_to_non_ring_mol_graph(mol: Chem.rdchem.Mol) -> Dict[int, List[int]]:
+    """
+    Obtains the non-ring molecular graph (i.e. chain only atom graph) from
+    an rdkit mol object (intended to be the generic scaffold of a molecule).
+    :param mol: Chem.rdchem.Mol - The input generic scaffold molecule
+    :return: Dict[int, List[int]] - The non-ring molecular graph
+    """
     # Create a dictionary to track the atoms connected by bonds
     non_ring_mol_graph = {}
 
@@ -38,14 +55,19 @@ def mol_to_non_ring_mol_graph(mol):
     return non_ring_mol_graph
 
 
-def _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph):
+def _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph: Dict[int, List[int]]) -> int:
+    """
+    Finds the number of chain assemblies.
+    :param non_ring_mol_graph: Dict[int, List[int]] - The non-ring molecular graph for a generic scaffold.
+    :return: num_chain_assemblies: int - The number of chain assemblies.
+    """
     visited = set()
-    num_chains = 0
+    num_chain_assemblies = 0
 
     # Depth-First Search (DFS) to find the number of chains
     for atom in non_ring_mol_graph:
         if atom not in visited:
-            num_chains += 1
+            num_chain_assemblies += 1
             stack = [atom]
             while stack:
                 node = stack.pop()
@@ -54,10 +76,10 @@ def _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph):
                 for neighbor in non_ring_mol_graph[node]:
                     if neighbor not in visited:
                         stack.append(neighbor)
-    return num_chains
+    return num_chain_assemblies
 
 
-def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph):
+def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph: Dict[int, List[int]]) -> List[int]:
     visited = set()
     # chains = 0
     chain_lengths = []
@@ -95,7 +117,7 @@ def _non_ring_mol_graph_to_chain_lengths(non_ring_mol_graph):
     return chain_lengths
 
 
-def get_rings_for_mol(mol):
+def mol_to_rings(mol):
     ring_info = mol.GetRingInfo()
     rings = [list(ring) for ring in ring_info.AtomRings()]
     return rings
@@ -206,7 +228,7 @@ def mol_to_chain_lengths(mol):
 
 
 def mol_to_num_ring_assemblies(mol):
-    rings_list = get_rings_for_mol(mol)
+    rings_list = mol_to_rings(mol)
     ring_assemblies_list = get_num_ring_assemblies(rings_list)
     atom2ring_idx = _rings_list_to_atom2ring_idx(rings_list)
     atom2ring_assembly_idx = _rings_list_to_atom2ring_idx(ring_assemblies_list)
@@ -216,6 +238,7 @@ def mol_to_num_ring_assemblies(mol):
 
 
 def generic_scaffold_mol_to_scins(mol: Chem.rdchem.Mol) -> str:
+    # TODO: refactor this function description
     """
     Currently you have to decide whether you want to use the generic scaffold of the molecule
     as originally defined by Bemis and Murcko, or use the scaffold that is trimmed further.
@@ -226,7 +249,7 @@ def generic_scaffold_mol_to_scins(mol: Chem.rdchem.Mol) -> str:
     if not isinstance(mol, Chem.rdchem.Mol):
         rdkit_mol_warning(mol)
         return ERROR_SCINS
-    rings_list = get_rings_for_mol(mol)
+    rings_list = mol_to_rings(mol)
 
     non_ring_mol_graph = mol_to_non_ring_mol_graph(mol)
     num_chain_assemblies = _non_ring_mol_graph_to_num_chain_assemblies(non_ring_mol_graph)
