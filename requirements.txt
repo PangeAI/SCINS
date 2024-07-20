@@ -1,3 +1,5 @@
+black==23.9.0
 jupyterlab==4.1.2
+numpy==1.26.3
+pandas==2.2.0
 rdkit==2023.9.3
-setuptools==69.1.0

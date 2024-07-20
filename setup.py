@@ -9,5 +9,5 @@ setup(
     ],
     author='Kamen Petrov',
     author_email='kamen.pavlinov.petrov@gmail.com',
-    description='A package for calculating the SCINS molecules',
+    description='A package for calculating the SCINS of molecules.',
 )
