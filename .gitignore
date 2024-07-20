@@ -1,8 +1,5 @@
-scins_definitions.ipynb
-scins/scins.egg-info
-scins/build
-scins/dist
+scins.egg-info
+build
 scins/__pycache__/
 tests/__pycache__/
 playground.py
-scins/dataclass
