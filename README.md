@@ -8,36 +8,44 @@ Clone and install the package:
 
 `cd SCINS`
 
-`pip install -e scins`
+`make build_env`
+
+or if you already have an environment with all the requirements:
+
+`make install`
 
 In your script (although probably the version below is better):
 
 ```python
 from rdkit import Chem
 from rdkit.Chem.Scaffolds.MurckoScaffold import GetScaffoldForMol, MakeScaffoldGeneric
-import scins
+from scins import scins
 
 mol = Chem.MolFromSmiles('Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1')
 scaffold = GetScaffoldForMol(mol)
 generic_scaffold = MakeScaffoldGeneric(scaffold)
-scins_str = scins.scaffold_mol_to_scins(mol)
+
+# or as in the paper trim the carbonyls by: 
+generic_mol = MakeScaffoldGeneric(mol)
+generic_scaffold = GetScaffoldForMol(generic_mol)
+
+scins = scins.generic_scaffold_mol_to_scins(mol)
 ```
 
 ## Important Note:
 
 It is essential that you apply the function on
-the generic scaffold. Otherwise, the result would not be meaningful.
+the generic scaffold. Otherwise, the result would not be what is intended.
 
 ## Second Important Note:
 
-A slightly weird behaviour was observed with the code above even though
-it is does implement what was described in the original paper. 
-In the following example, notice how the carbonyl oxygen lead to a "separate chain". 
-This does not correspond to my chemical intuition.
+In the following example, notice how the carbonyl oxygen lead to a "separate chain".
 
 ![alt text](assets/weird_scaffold_def.png "Figure 1")
 
-The following code snippet shows a way to avoid this issue:
+In case you want to avoid keeping the carbonyls as side chains in the generic scaffold use the following.
+Remember that compounds with hypervalent atoms (like hexavalent sulfur or pentavalent phosphorus will fail this step).
+To handle those use the provided `scins.GetScaffoldForMol_edited` function first and then apply `MakeScaffoldGeneric` to the result.
 
 ```python
 mol = Chem.MolFromSmiles(smiles)
@@ -56,7 +64,6 @@ scins_str = scins.generic_scaffold_mol_to_scins(generic_scaffold)
 ```
 For the same molecule, the function GetScaffoldForMol_edited in the 
 package trims the carbonyl oxygen (and other bits that are sticking out).
-Therefore, this definition of the scaffold harmonates with my notions of the world.
 
 ![alt text](assets/better_scaffold_def.png "Figure 2")
 
