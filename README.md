@@ -1,6 +1,48 @@
 # SCINS
+## Contents
+1. [What is SCINS?](#what-is-SCINS?)
+2. [Installation and setup](#install)
+3. [Notes](#Important-Note)
 
-## Intended usage
+## What is SCINS?
+
+![alt text](assets/illustration_SCINS.png "Figure 1")
+
+The SCINS descriptor. The SCaffold Identification and Naming System (SCINS) (Schueffenhauer et al., J. Chem. Inf. Model., 2007, Clustering and Rule-Based Classifications of Chemical Structures Evaluated in the Biological Activity Space) is a descriptor of the reduced generic scaffold and is represented by a string in the format A_B_C_D_E-F_G_H_I-J_K_L_M where each letter is the value of one of the following 12 numerical descriptors:
+
+A. Number of Chain Assemblies. Chain assemblies are contiguous linkers between ring assemblies. They are uncovered by removing all ring bonds in the molecule.
+
+B. Number of Chains. Chains are all unbranched linkers needed to cover all non-ring bonds in the molecule.
+
+C. Number of Rings.
+
+D. Number of Ring Assemblies. Ring assemblies are fragments remaining when all acyclic bonds have been removed.
+
+E. Number of Bridge Atoms. 
+
+F. Number of Ring Assemblies Consisting of Exactly One Ring.
+
+G. Number of Ring Assemblies Consisting of Exactly Two Rings.
+
+H. Number of Ring Assemblies Consisting of Three or More Rings.
+
+I. Number of Macrocycles. Rings constituting more than 12 atoms are considered macrocyclic.
+
+J. Binned Length of Shortest Chain.
+
+K. Binned Length of Second Shortest Chain.
+
+L. Binned Length of Third Shortest Chain.
+
+M. Binned Length of Fourth Shortest Chain.
+
+| Chain Length |  0 (No chain) | 1 | 2 | 3, 4 | 5, 6 | ≥ 7 |
+| :---: |  :---: | :---: | :---: | :---: | :---: | :---: |
+| Binned Length | 0 | 1 | 2 | 3 | 4 | 7 |
+
+
+
+## Install
 
 Clone and install the package:
 
@@ -32,16 +74,18 @@ generic_scaffold = GetScaffoldForMol(generic_mol)
 scins = scins.generic_scaffold_mol_to_scins(mol)
 ```
 
-## Important Note:
+## Important Note
 
 It is essential that you apply the function on
 the generic scaffold. Otherwise, the result would not be what is intended.
 
-## Second Important Note:
+For more practical examples of how to apply SCINS, please check `example/SCINS_example_usage.ipynb`.
+
+## Second Important Note
 
 In the following example, notice how the carbonyl oxygen lead to a "separate chain".
 
-![alt text](assets/weird_scaffold_def.png "Figure 1")
+![alt text](assets/weird_scaffold_def.png "Figure 2")
 
 In case you want to avoid keeping the carbonyls as side chains in the generic scaffold use the following.
 Remember that compounds with hypervalent atoms (like hexavalent sulfur or pentavalent phosphorus will fail this step).
@@ -65,6 +109,4 @@ scins_str = scins.generic_scaffold_mol_to_scins(generic_scaffold)
 For the same molecule, the function GetScaffoldForMol_edited in the 
 package trims the carbonyl oxygen (and other bits that are sticking out).
 
-![alt text](assets/better_scaffold_def.png "Figure 2")
-
-However, this function has not been tested thoroughly, so apply at your own risk.
+![alt text](assets/better_scaffold_def.png "Figure 3")
