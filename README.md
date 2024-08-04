@@ -60,7 +60,7 @@ To run the tests:
 
 `make test`
 
-In your script (although the example that follows this one is probably better):
+For details on how to use SCINS, check the notebook: `example/SCINS_example_usage.ipynb`. However, briefly, you can try:
 
 ```python
 from rdkit import Chem
@@ -71,11 +71,11 @@ mol = Chem.MolFromSmiles('Cc1cc(C)nc(SCC(=O)Nc2ncc(Cc3ccccc3)s2)n1')
 scaffold = GetScaffoldForMol(mol)
 generic_scaffold = MakeScaffoldGeneric(scaffold)
 
-# or as in the paper trim the carbonyls by: 
-generic_mol = MakeScaffoldGeneric(mol)
-generic_scaffold = GetScaffoldForMol(generic_mol)
+# or instead "trim" the carbonyls by (see notes below):
+scaffold = scins.GetScaffoldForMol_edited(mol)
+generic_scaffold = MakeScaffoldGeneric(scaffold)
 
-scins = scins.generic_scaffold_mol_to_scins(mol)
+scins = scins.generic_scaffold_mol_to_scins(generic_scaffold)
 ```
 
 ## Important Note
@@ -102,8 +102,8 @@ generic_scaffold = GetScaffoldForMol(generic_scaffold)
 scins_str = scins.generic_scaffold_mol_to_scins(generic_scaffold)
 ```
 
-Originally, I proposed using an edited version of the function in rdkit (below), but because it is not tested well, 
-I think the above is better - essentially making things generic first avoids complications due to bond orders.
+Originally, I proposed using an edited version of the function in rdkit (below), but if you'd rather relying on rdkit for the task of getting the scaffold, 
+I think the above is better - essentially making the molecule generic first avoids complications due to bond orders.
 
 ```python
 scaffold = scins.GetScaffoldForMol_edited(mol)
