@@ -1,8 +1,8 @@
 # SCINS
 ## Contents
-1. [What is SCINS?](#what-is-SCINS?)
+1. [What is SCINS?](#what-is-scins)
 2. [Installation and setup](#install)
-3. [Notes](#Important-Note)
+3. [Notes](#important-note)
 
 ## What is SCINS?
 
