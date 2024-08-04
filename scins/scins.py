@@ -84,8 +84,8 @@ def _non_ring_mol_graph_to_num_chain_assemblies(
 
 
 def _non_ring_mol_graph_to_chain_lengths(
-    non_ring_mol_graph: Dict[int, List[int]]
-) -> List[int]:
+    non_ring_mol_graph: dict[int, list[int]]
+) -> list[int]:
     visited = set()
     # chains = 0
     chain_lengths = []
@@ -362,7 +362,8 @@ def GetScaffoldForMol_edited(mol):
     murckoPatts = [
         "[!#1;D3;$([D3]-[!#1])](=[AD1])=[AD1]",
         "[!#1;D2;$([D2]-[!#1])]=,#[AD1]",
-        "[!#1;D1;$([D1]~[!#1;!n])]",  ## KP slight modification here compared to rdkit
+        # modification here to be able to cut any side-chain bond (including carbonyl)
+        "[!#1;D1;$([D1]~[!#1;!n])]",
         "[3H]",
         "[2H]",
         "[O;D1;$([D1]=[D3])]",
