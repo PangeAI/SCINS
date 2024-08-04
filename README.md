@@ -56,7 +56,11 @@ or if you already have an environment with all the requirements:
 
 `make install`
 
-In your script (although probably the version below is better):
+To run the tests:
+
+`make test`
+
+In your script (although the example that follows this one is probably better):
 
 ```python
 from rdkit import Chem
