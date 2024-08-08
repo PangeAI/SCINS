@@ -1,4 +1,7 @@
 # SCINS
+
+Code to accompany the preprint: https://chemrxiv.org/engage/chemrxiv/article-details/66b40b2e01103d79c51dc457.
+
 ## Contents
 1. [What is SCINS?](#what-is-scins)
 2. [Installation and setup](#install)
