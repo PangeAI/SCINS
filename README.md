@@ -1,6 +1,6 @@
 # SCINS
 
-Code to accompany the preprint: https://chemrxiv.org/engage/chemrxiv/article-details/66b40b2e01103d79c51dc457.
+This is an open-source implementation of SCINS (described in Schueffenhauer et al., J. Chem. Inf. Model., 2007, Clustering and Rule-Based Classifications of Chemical Structures Evaluated in the Biological Activity Space) and accompanies the preprint: https://chemrxiv.org/engage/chemrxiv/article-details/66b40b2e01103d79c51dc457
 
 ## Contents
 1. [What is SCINS?](#what-is-scins)
